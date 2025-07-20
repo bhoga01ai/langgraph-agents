@@ -1,0 +1,8 @@
+Architecture
+https://langchain-ai.github.io/langgraph/tutorials/workflows/
+
+Deployment Langgraph agent 
+https://langchain-ai.github.io/langgraph/tutorials/langgraph-platform/local-server/
+
+Execute the Langgraph agent using local client
+https://langchain-ai.github.io/langgraph/tutorials/langgraph-platform/local-server/

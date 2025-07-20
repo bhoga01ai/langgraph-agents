@@ -1,4 +1,4 @@
-#   LangGraph  Prompt Chain Workflow
+#   LangGraph  Prompt Chain Workflow - Sequential flow
 
 # Components
 # 1. Define a lLM 
