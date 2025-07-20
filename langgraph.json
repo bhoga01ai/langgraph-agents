@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "agent": "./langgraph_tools_agent.py:pre_built_agent"
+  },
+  "env": ".env"
+}
