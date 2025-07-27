@@ -1,4 +1,3 @@
-
 # LangGraph Agent and Workflow Examples
 
 This repository provides a collection of Python scripts demonstrating various features of the LangGraph library. These examples showcase how to build tool-using agents, create prompt-chaining workflows, and interact with deployed LangGraph agents.
@@ -12,15 +11,17 @@ This repository provides a collection of Python scripts demonstrating various fe
   - [Tool-Using Agent](#tool-using-agent)
   - [Prompt-Chaining Workflow](#prompt-chaining-workflow)
   - [Agent Client](#agent-client)
+  - [Pinecone Retriever](#pinecone-retriever)
 - [Dependencies](#dependencies)
 
 ## Overview
 
-This project serves as a practical guide to using LangGraph for building sophisticated language agent applications. It includes three distinct examples:
+This project serves as a practical guide to using LangGraph for building sophisticated language agent applications. It includes four distinct examples:
 
 1.  **Tool-Using Agent (`langgraph_tools_agent.py`)**: Demonstrates how to create an agent that can use a variety of tools, including fetching weather information, currency exchange rates, stock prices, and searching YouTube.
 2.  **Prompt-Chaining Workflow (`langgraph_prompt_chain_workflow.py`)**: Illustrates a conditional workflow where a joke is generated, evaluated, and then improved based on a quality check.
 3.  **Agent Client (`langgraph_agent_client.py`)**: Provides a client script to communicate with a deployed LangGraph agent.
+4.  **Pinecone Retriever (`pinecone_retriever_tool.py`)**: Shows how to create a tool that retrieves information from a Pinecone vector store.
 
 ## Features
 
@@ -29,6 +30,7 @@ This project serves as a practical guide to using LangGraph for building sophist
 -   **State Management**: Utilizes `StateGraph` and `MessagesState` to manage the application's state throughout the workflow.
 -   **Pre-built Agents**: Leverages `create_react_agent` for rapid development of tool-using agents.
 -   **Visualization**: Generates and saves visual representations of the workflows as PNG images and Mermaid diagram files.
+-   **Vector Store Integration**: Shows how to connect to a Pinecone vector store and retrieve data.
 
 ## Installation
 
@@ -54,6 +56,7 @@ This project serves as a practical guide to using LangGraph for building sophist
     ```
     GOOGLE_API_KEY="your_google_api_key"
     weatherAPIKey="your_weather_api_key"
+    PINECONE_API_KEY="your_pinecone_api_key"
     ```
 
 ## Usage
@@ -93,6 +96,17 @@ This script provides a client to interact with a deployed LangGraph agent.
 
 The client will send a request to the agent ("what is weather like in New York") and print the streamed response.
 
+### Pinecone Retriever
+
+This script demonstrates how to create a tool that retrieves information from a Pinecone vector store. The `pinecone_retriever_tool.py` file contains the tool definition, and the `util.py` file contains helper functions for creating and managing the Pinecone index. The `docs/apple_10k.pdf` file is used as the data source for the vector store.
+
+**To run the script**:
+```bash
+python pinecone_retriever_tool.py
+```
+
+This will execute a pre-defined query ("what was obama said about schools") and print the retrieved context.
+
 ## Dependencies
 
 The project's dependencies are listed in the `requirements.txt` file:
@@ -109,3 +123,9 @@ The project's dependencies are listed in the `requirements.txt` file:
 - `IPython`
 - `langgraph-cli[inmem]`
 - `langgraph-sdk`
+- `langchain-pinecone`
+- `langchain-openai`
+- `pinecone`
+- `langchain-huggingface`
+- `pypdf`
+- `sentence-transformers`
