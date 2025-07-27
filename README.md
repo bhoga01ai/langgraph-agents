@@ -107,6 +107,17 @@ python pinecone_retriever_tool.py
 
 This will execute a pre-defined query ("what was obama said about schools") and print the retrieved context.
 
+### Chatbot Example
+
+This script (`chatbot.py`) implements a simple conversational chatbot using LangGraph. It demonstrates how to create a basic agent that can respond to user input. The `chatbot_graph.png` file provides a visual representation of the chatbot's workflow.
+
+**To run the script**:
+```bash
+python chatbot.py
+```
+
+This will start an interactive chatbot session in your terminal.
+
 ## Dependencies
 
 The project's dependencies are listed in the `requirements.txt` file:
