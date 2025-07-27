@@ -11,3 +11,9 @@ langgraph
 IPython
 langgraph-cli[inmem]
 langgraph-sdk
+langchain-pinecone 
+langchain-openai
+pinecone
+langchain-huggingface
+pypdf
+sentence-transformers
