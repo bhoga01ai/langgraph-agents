@@ -176,7 +176,6 @@ def ingest_apple_10k_docs_into_vector_store(file_path: str,index_name: str = pc_
     PineconeVectorStore.from_documents(chunks, embeddings, index_name=index_name)
     return 'Data inserted successfully'
 
- #Function to retrieve data from index
 @tool
 def retrieve_apple_10k_context(
     query: str, 
@@ -210,6 +209,85 @@ def retrieve_apple_10k_context(
     except Exception as e:
         return f"Error retrieving context: {str(e)}"
 
+
+@tool
+def drop_pinecone_index(index_name: str) -> str:
+    """
+    Drop/delete a Pinecone vector index by name.
+    
+    This function connects to Pinecone and deletes the specified index.
+    Use this tool when you need to remove an index that is no longer needed
+    or to clean up resources.
+    
+    Args:
+        index_name (str): The name of the Pinecone index to be deleted.
+                         Example: 'langgragh-tools-apple-pc-index' or 'semantic-search-obama-text-may2025'
+    
+    Returns:
+        str: A success message if the index was deleted successfully,
+             or an error message if the operation failed.
+             
+    Raises:
+        Exception: If there's an error connecting to Pinecone or deleting the index.
+    """
+    try:
+        # Initialize pinecone client
+        pc = initialize_pinecone()
+        
+        # Check if index exists
+        existing_indexes = [index.name for index in pc.list_indexes()]
+        
+        if index_name not in existing_indexes:
+            return f"Index '{index_name}' does not exist. Available indexes: {existing_indexes}"
+        
+        # Delete the index
+        pc.delete_index(index_name)
+        
+        # Verify deletion
+        remaining_indexes = [index.name for index in pc.list_indexes()]
+        
+        if index_name not in remaining_indexes:
+            return f"Index '{index_name}' has been successfully deleted. Remaining indexes: {remaining_indexes}"
+        else:
+            return f"Failed to delete index '{index_name}'. It may still exist."
+            
+    except Exception as e:
+        return f"Error dropping index '{index_name}': {str(e)}"
+
+@tool
+def list_pinecone_indexes() -> str:
+    """
+    List all available Pinecone vector indexes.
+    
+    This function connects to Pinecone and retrieves a list of all existing indexes
+    in your Pinecone environment. Useful for checking what indexes are available
+    before performing operations.
+    
+    Returns:
+        str: A formatted string containing all available index names and their details,
+             or an error message if the operation failed.
+    """
+    try:
+        # Initialize pinecone client
+        pc = initialize_pinecone()
+        
+        # Get list of indexes
+        indexes = pc.list_indexes()
+        
+        if not indexes:
+            return "No Pinecone indexes found in your environment."
+        
+        index_info = "Available Pinecone Indexes:\n\n"
+        for i, index in enumerate(indexes, 1):
+            index_info += f"{i}. Name: {index.name}\n"
+            index_info += f"   Dimension: {index.dimension}\n"
+            index_info += f"   Metric: {index.metric}\n"
+            index_info += f"   Host: {index.host}\n\n"
+        
+        return index_info
+        
+    except Exception as e:
+        return f"Error listing Pinecone indexes: {str(e)}"
 
 @tool   # Function to retrieve all tools 
 def helper_func():
@@ -251,9 +329,12 @@ def helper_func():
     return tool_info_str
 
 # Augment the LLM with tools
+# Update the tools list (around line 240)
 tools = [get_temperature,get_currency_exchange_rates,get_stock_price,youtube,retrieve_obama_speech_context,
-         helper_func,retrieve_apple_10k_context,ingest_apple_10k_docs_into_vector_store]
+         helper_func,retrieve_apple_10k_context,ingest_apple_10k_docs_into_vector_store,
+         drop_pinecone_index,list_pinecone_indexes]
 
+# Update the available_functions dictionary (around line 242)
 available_functions = {
     "get_temperature": get_temperature,
     "get_currency_exchange_rates": get_currency_exchange_rates,
@@ -261,7 +342,9 @@ available_functions = {
     "youtube": youtube,
     "retrieve_obama_speech_context": retrieve_obama_speech_context,
     "helper_func": helper_func,
-    "retrieve_apple_10k_context": retrieve_apple_10k_context
+    "retrieve_apple_10k_context": retrieve_apple_10k_context,
+    "drop_pinecone_index": drop_pinecone_index,
+    "list_pinecone_indexes": list_pinecone_indexes
 }
 # Create a dictionary of tools by name
 tools_by_name = {tool.name: tool for tool in tools}
@@ -295,3 +378,4 @@ messages = [HumanMessage(content="what was obama said about elementary schools a
 messages = pre_built_agent.invoke({"messages": messages})
 for m in messages["messages"]:
     m.pretty_print()
+
