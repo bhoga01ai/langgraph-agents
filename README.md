@@ -31,6 +31,7 @@ This project serves as a practical guide to using LangGraph for building sophist
 -   **Pre-built Agents**: Leverages `create_react_agent` for rapid development of tool-using agents.
 -   **Visualization**: Generates and saves visual representations of the workflows as PNG images and Mermaid diagram files.
 -   **Vector Store Integration**: Shows how to connect to a Pinecone vector store and retrieve data.
+-   **Utility Functions**: The `util.py` file provides helper functions for creating and managing the Pinecone index, including text splitting, embedding generation, and Pinecone index management.
 
 ## Installation
 
@@ -52,11 +53,13 @@ This project serves as a practical guide to using LangGraph for building sophist
     ```
 
 4.  **Set up your environment variables**:
-    Create a `.env` file in the root directory and add your API keys:
+    Create a `.env` file in the root directory and add your API keys. Refer to `env.example` for the full list of required variables.
     ```
     GOOGLE_API_KEY="your_google_api_key"
     weatherAPIKey="your_weather_api_key"
     PINECONE_API_KEY="your_pinecone_api_key"
+    HF_TOKEN="your_huggingface_api_key"
+    TOKENIZERS_PARALLELISM="false"
     ```
 
 ## Usage
