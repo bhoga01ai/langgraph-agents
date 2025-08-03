@@ -2,11 +2,39 @@
 
 This repository provides a collection of Python scripts demonstrating various features of the LangGraph library. These examples showcase how to build tool-using agents, create prompt-chaining workflows, and interact with deployed LangGraph agents.
 
+## Getting Started
+
+Follow these steps to set up and run the examples:
+
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/your-username/week2-langgraph-agents.git
+    cd week2-langgraph-agents
+    ```
+
+2.  **Create and activate a virtual environment**:
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate
+    ```
+
+3.  **Install dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Set up environment variables**:
+    Create a `.env` file by copying the `env.example` file:
+    ```bash
+    cp env.example .env
+    ```
+    Then, add your API keys to the `.env` file.
+
 ## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
-- [Installation](#installation)
+
 - [Usage](#usage)
   - [Tool-Using Agent](#tool-using-agent)
   - [Prompt-Chaining Workflow](#prompt-chaining-workflow)
@@ -33,34 +61,7 @@ This project serves as a practical guide to using LangGraph for building sophist
 -   **Vector Store Integration**: Shows how to connect to a Pinecone vector store and retrieve data.
 -   **Utility Functions**: The `util.py` file provides helper functions for creating and managing the Pinecone index, including text splitting, embedding generation, and Pinecone index management.
 
-## Installation
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/your-username/week2-langgraph-agents.git
-    cd week2-langgraph-agents
-    ```
-
-2.  **Create a virtual environment and activate it**:
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate
-    ```
-
-3.  **Install the required dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Set up your environment variables**:
-    Create a `.env` file in the root directory and add your API keys. Refer to `env.example` for the full list of required variables.
-    ```
-    GOOGLE_API_KEY="your_google_api_key"
-    weatherAPIKey="your_weather_api_key"
-    PINECONE_API_KEY="your_pinecone_api_key"
-    HF_TOKEN="your_huggingface_api_key"
-    TOKENIZERS_PARALLELISM="false"
-    ```
 
 ## Usage
 
@@ -85,6 +86,16 @@ python langgraph_prompt_chain_workflow.py
 ```
 
 The script will generate a joke about "cats," check if it has a punchline, and then improve and polish it if necessary. The final joke will be printed to the console.
+
+### langgraph studio using langgraph dev
+
+**To run the script**:
+1. activate the virtual environment
+2. run the following command:
+```bash
+langgraph dev
+```
+This will start the langgraph studio.
 
 ### Agent Client
 
@@ -120,6 +131,8 @@ python chatbot.py
 ```
 
 This will start an interactive chatbot session in your terminal.
+
+
 
 ## Dependencies
 

@@ -28,7 +28,7 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, Tool
 from langchain_community.tools import YouTubeSearchTool
 from langchain_pinecone import PineconeVectorStore
 
-from util import create_pc_index, load_chunk_file,initialize_pinecone,setup_vector_store
+from util import create_pc_index, load_chunk_file,initialize_pinecone,setup_vector_store,process_uploaded_file
 
 from langchain_huggingface import HuggingFaceEmbeddings
 
@@ -166,6 +166,7 @@ def ingest_apple_10k_docs_into_vector_store(file_path: str,index_name: str = pc_
              successfully processed and inserted into the Pinecone vector store.
              
     """
+    
     # Initialize pinecone client
     pc = initialize_pinecone()
     # create index
@@ -328,13 +329,108 @@ def helper_func():
     
     return tool_info_str
 
-# Augment the LLM with tools
-# Update the tools list (around line 240)
+
+@tool
+def handle_file_upload(attachment_data: str) -> str:
+    """
+    Handle file uploads from LangStudio interface.
+    
+    This tool processes file attachments sent from the LangStudio interface
+    and extracts the file path or content for further processing.
+    
+    Args:
+        attachment_data (str): String representation of file attachment information
+                              that will be parsed into a dictionary, or just a filename
+        
+    Returns:
+        str: File path or processing result
+    """
+    import json
+    import ast
+    import os
+    
+    try:
+        # First, check if it's just a simple filename
+        if not attachment_data.startswith('{') and not attachment_data.startswith('['):
+            # It's likely just a filename, treat it as a file path
+            filename = attachment_data.strip()
+            
+            # Try different possible locations for the file
+            possible_paths = [
+                filename,  # Current directory
+                os.path.join(os.getcwd(), filename),  # Explicit current directory
+                os.path.join(os.getcwd(), 'docs', filename),  # docs folder
+                os.path.join(os.getcwd(), 'docs', 'apple_10k.pdf'),  # Default Apple 10K file
+            ]
+            
+            for file_path in possible_paths:
+                if os.path.exists(file_path):
+                    result = ingest_apple_10k_docs_into_vector_store(file_path)
+                    return f"Successfully processed file '{filename}' from path '{file_path}': {result}"
+            
+            # If no file found, provide helpful message
+            return f"File '{filename}' not found. Tried locations: {', '.join(possible_paths)}. Please ensure the file exists or use the full file path."
+        
+        # Try to parse the string as JSON first
+        try:
+            data = json.loads(attachment_data)
+        except json.JSONDecodeError:
+            # If JSON parsing fails, try to evaluate as Python literal
+            try:
+                data = ast.literal_eval(attachment_data)
+            except (ValueError, SyntaxError):
+                return f"Error: Could not parse attachment data as JSON or Python literal: {attachment_data}"
+        
+        if not isinstance(data, dict):
+            return f"Error: Parsed data is not a dictionary: {type(data)}"
+            
+        if 'path' in data:
+            # If file path is directly available
+            file_path = data['path']
+            filename = data.get('name', 'uploaded_file')
+            
+            # Convert to absolute path if it's relative
+            if not os.path.isabs(file_path):
+                # Check if file exists in current directory
+                current_dir_path = os.path.join(os.getcwd(), file_path)
+                if os.path.exists(current_dir_path):
+                    file_path = current_dir_path
+                else:
+                    # Check if it's just a filename, look in docs folder
+                    docs_path = os.path.join(os.getcwd(), 'docs', file_path)
+                    if os.path.exists(docs_path):
+                        file_path = docs_path
+                    else:
+                        return f"Error: File not found. Tried paths: {current_dir_path}, {docs_path}"
+            
+            # Verify file exists
+            if not os.path.exists(file_path):
+                return f"Error: File does not exist at path: {file_path}"
+            
+            # Process the file
+            result = ingest_apple_10k_docs_into_vector_store(file_path)
+            return f"Successfully processed file '{filename}' from path '{file_path}': {result}"
+            
+        elif 'content' in data:
+            # If file content is provided (base64 encoded)
+            filename = data.get('name', 'uploaded_file')
+            file_type = data.get('type', 'pdf').lower().replace('application/', '')
+            content = data['content']
+            
+            return process_uploaded_file(content, filename, file_type)
+            
+        else:
+            return f"Invalid attachment data. Expected 'path' or 'content' key. Received: {list(data.keys())}"
+            
+    except Exception as e:
+        return f"Error handling file upload: {str(e)}"
+
+# Update the tools list
 tools = [get_temperature,get_currency_exchange_rates,get_stock_price,youtube,retrieve_obama_speech_context,
          helper_func,retrieve_apple_10k_context,ingest_apple_10k_docs_into_vector_store,
-         drop_pinecone_index,list_pinecone_indexes]
+         drop_pinecone_index,list_pinecone_indexes,handle_file_upload]
 
-# Update the available_functions dictionary (around line 242)
+# Update the available_functions dictionary
 available_functions = {
     "get_temperature": get_temperature,
     "get_currency_exchange_rates": get_currency_exchange_rates,
@@ -343,8 +439,10 @@ available_functions = {
     "retrieve_obama_speech_context": retrieve_obama_speech_context,
     "helper_func": helper_func,
     "retrieve_apple_10k_context": retrieve_apple_10k_context,
+    "ingest_apple_10k_docs_into_vector_store": ingest_apple_10k_docs_into_vector_store,
     "drop_pinecone_index": drop_pinecone_index,
-    "list_pinecone_indexes": list_pinecone_indexes
+    "list_pinecone_indexes": list_pinecone_indexes,
+    "handle_file_upload": handle_file_upload,
 }
 # Create a dictionary of tools by name
 tools_by_name = {tool.name: tool for tool in tools}

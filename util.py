@@ -121,3 +121,42 @@ def insert_data_to_index(file_path: str):
         list: A list of document chunks created from the PDF.
     """
     return load_chunk_file(file_path)
+
+def process_uploaded_file(file_content: str, filename: str, file_type: str = "pdf") -> str:
+    """
+    Handle file attachments from LangStudio interface.
+    
+    This tool should be called when a user uploads a file through the interface.
+    It will attempt to process any attached files for vector store ingestion.
+    Process an uploaded file by saving it temporarily and ingesting into vector store.
+    
+    Args:
+        file_content (str): Base64 encoded file content
+        filename (str): Name of the uploaded file
+        file_type (str): File extension (default: "pdf")
+        
+    Returns:
+        str: Success message or error details
+    """
+    import base64
+    import tempfile
+    import os
+    
+    try:
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_type}") as temp_file:
+            # Decode and write file content
+            file_data = base64.b64decode(file_content)
+            temp_file.write(file_data)
+            temp_file_path = temp_file.name
+        
+        # Process using existing function
+        result = ingest_apple_10k_docs_into_vector_store(temp_file_path)
+        
+        # Clean up
+        os.unlink(temp_file_path)
+        
+        return f"Successfully processed '{filename}': {result}"
+        
+    except Exception as e:
+        return f"Error processing '{filename}': {str(e)}"

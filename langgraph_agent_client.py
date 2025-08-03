@@ -12,7 +12,7 @@ async def main():
         input={
         "messages": [{
             "role": "human",
-            "content":"why sky is blue.",
+            "content":"what was apple 2022 revenue in billions",
             }],
         },
     ):
