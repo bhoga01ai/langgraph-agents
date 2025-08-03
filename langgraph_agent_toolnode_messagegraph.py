@@ -57,6 +57,7 @@ def router(state: list[BaseMessage]) -> Literal["get_product_details", "__end__"
 builder = MessageGraph()
 builder.add_node("llm_with_tools", llm_with_tools)
 builder.add_node("get_product_details", tool_node)
+
 builder.add_edge(START, "llm_with_tools")
 # Use conditional_edges instead of add_edge for routing
 builder.add_conditional_edges("llm_with_tools", router)

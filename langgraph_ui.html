@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangGraph Agent Chat Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #4a5568;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f7fafc;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background: #4299e1;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .ai-message {
+            background: #e2e8f0;
+            color: #2d3748;
+            margin-right: auto;
+        }
+
+        .loading {
+            background: #fed7d7;
+            color: #c53030;
+            margin-right: auto;
+            font-style: italic;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: #4299e1;
+        }
+
+        .send-button {
+            margin-left: 10px;
+            padding: 12px 24px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .send-button:hover {
+            background: #3182ce;
+        }
+
+        .send-button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 10px 20px;
+            background: #f7fafc;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .error {
+            color: #e53e3e;
+        }
+
+        .success {
+            color: #38a169;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            🤖 LangGraph Agent Chat
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai-message">
+                Hello! I'm your LangGraph agent. I can help you with various tasks including retrieving information from documents, getting stock prices, weather data, and more. What would you like to know?
+            </div>
+        </div>
+        
+        <div class="status" id="status">
+            Ready to chat
+        </div>
+        
+        <div class="chat-input">
+            <input 
+                type="text" 
+                id="messageInput" 
+                class="input-field" 
+                placeholder="Type your message here..."
+                onkeypress="handleKeyPress(event)"
+            >
+            <button id="sendButton" class="send-button" onclick="sendMessage()">
+                Send
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:2024';
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const status = document.getElementById('status');
+
+        function addMessage(content, isUser = false, isLoading = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : isLoading ? 'loading' : 'ai-message'}`;
+            messageDiv.textContent = content;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return messageDiv;
+        }
+
+        function updateStatus(message, isError = false) {
+            status.textContent = message;
+            status.className = isError ? 'status error' : 'status success';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Replace the sendMessage function with this simpler, non-streaming version:
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+        
+            // Add user message
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            // Disable input while processing
+            sendButton.disabled = true;
+            messageInput.disabled = true;
+            
+            // Add loading message
+            const loadingMessage = addMessage('Thinking...', false, true);
+            updateStatus('Sending message to agent...');
+        
+            try {
+                const response = await fetch(`${API_URL}/runs/wait`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        assistant_id: 'agent',
+                        input: {
+                            messages: [{
+                                role: 'human',
+                                content: message
+                            }]
+                        }
+                    })
+                });
+        
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+        
+                const data = await response.json();
+                
+                // Remove loading message
+                loadingMessage.remove();
+                
+                // Extract AI response
+                if (data && data.messages) {
+                    // Find the last AI message
+                    let aiResponse = null;
+                    for (let i = data.messages.length - 1; i >= 0; i--) {
+                        const msg = data.messages[i];
+                        if (msg.type === 'ai' && msg.content) {
+                            aiResponse = msg.content;
+                            break;
+                        }
+                    }
+                    
+                    if (aiResponse) {
+                        addMessage(aiResponse);
+                        updateStatus('Message received successfully');
+                    } else {
+                        addMessage('Sorry, I didn\'t receive a proper response. Please try again.');
+                        updateStatus('No response received', true);
+                    }
+                } else {
+                    addMessage('Sorry, I didn\'t receive a proper response. Please try again.');
+                    updateStatus('Invalid response format', true);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loadingMessage.remove();
+                addMessage(`Error: ${error.message}. Please make sure the LangGraph server is running on ${API_URL}`);
+                updateStatus(`Connection error: ${error.message}`, true);
+            } finally {
+                // Re-enable input
+                sendButton.disabled = false;
+                messageInput.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // Focus on input when page loads
+        window.onload = function() {
+            messageInput.focus();
+            updateStatus('Ready to chat');
+        };
+    </script>
+</body>
+</html>

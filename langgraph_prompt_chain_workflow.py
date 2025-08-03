@@ -20,7 +20,7 @@ import requests
 from dotenv import load_dotenv
 load_dotenv()
 os.environ['GOOGLE_API_KEY'] = os.getenv('GOOGLE_API_KEY')
-weatherAPIKey = str(os.getenv('weatherAPIKey'))
+
 
 from langchain.chat_models import init_chat_model
 from typing_extensions import TypedDict
@@ -51,9 +51,17 @@ def check_punchline(state: State):
     """Gate function to check if the joke has a punchline"""
 
     # Simple check - does the joke contain "?" or "!"
-    if "?" in state["joke"] or "!" in state["joke"]:
-        return "Pass"
-    return "Fail"
+    if "?" in state["joke"] or "!" in state["joke"]:   # custom logic
+        return "Fail"
+    return "Pass"
+
+# def check_punchline(state: State):
+#     """Gate function to check if the joke has a punchline"""
+
+#     # Simple check - does the joke contain "?" or "!"
+#     if "?" in state["joke"] or "!" in state["joke"]:   # custom logic
+#         return improve_joke
+#     return END
 
 def improve_joke(state: State):
     """Second LLM call to improve the joke"""
@@ -82,7 +90,10 @@ workflow.add_node("polish_joke", polish_joke)
 workflow.add_edge(START, "generate_joke")
 workflow.add_conditional_edges(
     "generate_joke", check_punchline, {"Fail": "improve_joke", "Pass": END}
+    # "generate_joke", check_punchline
 )
+workflow.add_edge("generate_joke", "improve_joke")
+workflow.add_edge("generate_joke", END)
 workflow.add_edge("improve_joke", "polish_joke")
 workflow.add_edge("polish_joke", END)
 
