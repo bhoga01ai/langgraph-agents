@@ -425,10 +425,161 @@ def handle_file_upload(attachment_data: str) -> str:
     except Exception as e:
         return f"Error handling file upload: {str(e)}"
 
+@tool
+def get_pinecone_index_details(index_name: str) -> str:
+    """
+    Get comprehensive details about a specific Pinecone index including embedding model info and metadata.
+    
+    This function retrieves detailed information about a Pinecone index including:
+    - Basic index properties (name, dimension, metric, host)
+    - Index statistics (vector count, index size)
+    - Metadata information
+    - Configuration details
+    - Status and readiness
+    
+    Args:
+        index_name (str): The name of the Pinecone index to get details for.
+                         Example: 'langgragh-tools-apple-pc-index' or 'semantic-search-obama-text-may2025'
+    
+    Returns:
+        str: A formatted string containing comprehensive index details,
+             or an error message if the operation failed.
+    """
+    try:
+        # Initialize pinecone client
+        pc = initialize_pinecone()
+        
+        # Check if index exists
+        existing_indexes = [index.name for index in pc.list_indexes()]
+        
+        if index_name not in existing_indexes:
+            return f"Index '{index_name}' does not exist. Available indexes: {existing_indexes}"
+        
+        # Get index details from list_indexes (basic info)
+        index_info = None
+        for index in pc.list_indexes():
+            if index.name == index_name:
+                index_info = index
+                break
+        
+        if not index_info:
+            return f"Could not retrieve information for index '{index_name}'"
+        
+        # Connect to the index to get statistics
+        index = pc.Index(index_name)
+        
+        # Get index statistics
+        try:
+            stats = index.describe_index_stats()
+        except Exception as stats_error:
+            stats = None
+            stats_error_msg = str(stats_error)
+        
+        # Format the comprehensive details
+        details = f"📊 Pinecone Index Details: {index_name}\n"
+        details += "=" * 50 + "\n\n"
+        
+        # Basic Information
+        details += "🔧 Basic Information:\n"
+        details += f"   • Name: {index_info.name}\n"
+        details += f"   • Dimension: {index_info.dimension}\n"
+        details += f"   • Metric: {index_info.metric}\n"
+        details += f"   • Host: {index_info.host}\n"
+        
+        # Try to get additional properties if available
+        if hasattr(index_info, 'status'):
+            details += f"   • Status: {index_info.status}\n"
+        if hasattr(index_info, 'spec'):
+            details += f"   • Spec: {index_info.spec}\n"
+        
+        details += "\n"
+        
+        # Statistics Information
+        if stats:
+            details += "📈 Index Statistics:\n"
+            if 'total_vector_count' in stats:
+                details += f"   • Total Vectors: {stats['total_vector_count']:,}\n"
+            
+            if 'dimension' in stats:
+                details += f"   • Vector Dimension: {stats['dimension']}\n"
+            
+            if 'index_fullness' in stats:
+                fullness_percent = stats['index_fullness'] * 100
+                details += f"   • Index Fullness: {fullness_percent:.2f}%\n"
+            
+            # Namespace information
+            if 'namespaces' in stats and stats['namespaces']:
+                details += f"   • Namespaces: {len(stats['namespaces'])}\n"
+                for namespace, ns_stats in stats['namespaces'].items():
+                    ns_name = namespace if namespace else "(default)"
+                    vector_count = ns_stats.get('vector_count', 0)
+                    details += f"     - {ns_name}: {vector_count:,} vectors\n"
+            else:
+                details += "   • Namespaces: None (using default namespace)\n"
+        else:
+            details += "📈 Index Statistics:\n"
+            details += f"   • Error retrieving stats: {stats_error_msg if 'stats_error_msg' in locals() else 'Unknown error'}\n"
+        
+        details += "\n"
+        
+        # Embedding Model Information (inferred from dimension)
+        details += "🤖 Embedding Model Information:\n"
+        dimension = index_info.dimension
+        
+        # Common embedding model dimensions
+        model_mapping = {
+            384: "sentence-transformers/all-MiniLM-L6-v2 or similar 384-dim model",
+            512: "sentence-transformers/all-mpnet-base-v2 or similar 512-dim model", 
+            768: "sentence-transformers/all-mpnet-base-v2, BERT-base, or similar 768-dim model",
+            1024: "OpenAI text-embedding-ada-002 (legacy) or similar 1024-dim model",
+            1536: "OpenAI text-embedding-ada-002 or text-embedding-3-small",
+            3072: "OpenAI text-embedding-3-large",
+            4096: "Cohere embed-english-v3.0 or similar large model"
+        }
+        
+        if dimension in model_mapping:
+            details += f"   • Likely Model: {model_mapping[dimension]}\n"
+        else:
+            details += f"   • Custom Model: {dimension}-dimensional embedding model\n"
+        
+        details += f"   • Vector Dimension: {dimension}\n"
+        details += f"   • Distance Metric: {index_info.metric}\n"
+        
+        # Recommendations based on metric
+        if index_info.metric == 'cosine':
+            details += "   • Metric Note: Cosine similarity - good for text embeddings\n"
+        elif index_info.metric == 'euclidean':
+            details += "   • Metric Note: Euclidean distance - good for normalized vectors\n"
+        elif index_info.metric == 'dotproduct':
+            details += "   • Metric Note: Dot product - good for normalized vectors\n"
+        
+        details += "\n"
+        
+        # Usage Recommendations
+        details += "💡 Usage Recommendations:\n"
+        if stats and 'total_vector_count' in stats:
+            vector_count = stats['total_vector_count']
+            if vector_count == 0:
+                details += "   • Index is empty - ready for data ingestion\n"
+            elif vector_count < 1000:
+                details += "   • Small index - suitable for testing and development\n"
+            elif vector_count < 100000:
+                details += "   • Medium index - good for production use cases\n"
+            else:
+                details += "   • Large index - enterprise-scale deployment\n"
+        
+        details += f"   • Optimal for: {dimension}-dimensional vector similarity search\n"
+        details += f"   • Best practices: Use {index_info.metric} distance for queries\n"
+        
+        return details
+        
+    except Exception as e:
+        return f"Error getting details for index '{index_name}': {str(e)}"
+
 # Update the tools list
 tools = [get_temperature,get_currency_exchange_rates,get_stock_price,youtube,retrieve_obama_speech_context,
          helper_func,retrieve_apple_10k_context,ingest_apple_10k_docs_into_vector_store,
-         drop_pinecone_index,list_pinecone_indexes,handle_file_upload]
+         drop_pinecone_index,list_pinecone_indexes,get_pinecone_index_details,handle_file_upload]
 
 # Update the available_functions dictionary
 available_functions = {
@@ -442,6 +593,7 @@ available_functions = {
     "ingest_apple_10k_docs_into_vector_store": ingest_apple_10k_docs_into_vector_store,
     "drop_pinecone_index": drop_pinecone_index,
     "list_pinecone_indexes": list_pinecone_indexes,
+    "get_pinecone_index_details": get_pinecone_index_details,
     "handle_file_upload": handle_file_upload,
 }
 # Create a dictionary of tools by name

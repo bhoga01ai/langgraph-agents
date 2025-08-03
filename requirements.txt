@@ -17,3 +17,4 @@ pinecone
 langchain-huggingface
 pypdf
 sentence-transformers
+flask
