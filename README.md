@@ -1,78 +1,158 @@
-# LangGraph Agents
+# LangGraph Agent and Workflow Examples
 
-This project demonstrates various examples of building AI agents and workflows using the LangGraph library. It includes a simple sequential workflow, a tool-using agent, and a ReAct agent with a comprehensive set of tools and a Flask UI.
-
-## Features
-
-- **Sequential Workflow**: A simple workflow for generating and improving jokes.
-- **Tool-Using Agent**: An agent that can use a tool to get product details.
-- **ReAct Agent**: A more advanced agent that can use a variety of tools, including:
-    - Weather lookup
-    - Currency exchange rates
-    - Stock prices
-    - YouTube search
-    - Pinecone vector store for RAG (Retrieval-Augmented Generation)
-- **Flask UI**: A simple web interface to interact with the ReAct agent.
-
-## Architecture
-
-The project is structured as follows:
-
-- **`langgraph_prompt_chain_workflow.py`**: Implements the sequential joke generation workflow.
-- **`langgraph_agent_toolnode_messagegraph.py`**: Implements the simple tool-using agent.
-- **`langgraph_tools_agent.py`**: Implements the ReAct agent with multiple tools.
-- **`flask_ui.py`**: Provides a Flask-based web UI for the agent.
-- **`util.py`**: Contains utility functions for working with Pinecone.
+This repository provides a collection of Python scripts demonstrating various features of the LangGraph library. These examples showcase how to build tool-using agents, create prompt-chaining workflows, and interact with deployed LangGraph agents.
 
 ## Getting Started
 
-### Prerequisites
+Follow these steps to set up and run the examples:
 
-- Python 3.10+
-- An environment with the required packages installed.
-
-### Installation
-
-1.  Clone the repository:
+1.  **Clone the repository**:
     ```bash
     git clone https://github.com/your-username/week2-langgraph-agents.git
     cd week2-langgraph-agents
     ```
-2.  Install the dependencies:
+
+2.  **Create and activate a virtual environment**:
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate
+    ```
+
+3.  **Install dependencies**:
     ```bash
     pip install -r requirements.txt
     ```
-3.  Set up your environment variables by creating a `.env` file from the `env.example`:
+
+4.  **Set up environment variables**:
+    Create a `.env` file by copying the `env.example` file:
     ```bash
     cp env.example .env
     ```
-    Then, fill in your API keys in the `.env` file.
+    Then, add your API keys to the `.env` file.
 
-### Running the Agent
+## Table of Contents
 
-1.  Start the LangGraph agent:
+- [Overview](#overview)
+- [Features](#features)
+
+- [Usage](#usage)
+  - [Tool-Using Agent](#tool-using-agent)
+  - [Prompt-Chaining Workflow](#prompt-chaining-workflow)
+  - [Agent Client](#agent-client)
+  - [Pinecone Retriever](#pinecone-retriever)
+- [Dependencies](#dependencies)
+
+## Overview
+
+This project serves as a practical guide to using LangGraph for building sophisticated language agent applications. It includes four distinct examples:
+
+1.  **Tool-Using Agent (`langgraph_tools_agent.py`)**: Demonstrates how to create an agent that can use a variety of tools, including fetching weather information, currency exchange rates, stock prices, and searching YouTube.
+2.  **Prompt-Chaining Workflow (`langgraph_prompt_chain_workflow.py`)**: Illustrates a conditional workflow where a joke is generated, evaluated, and then improved based on a quality check.
+3.  **Agent Client (`langgraph_agent_client.py`)**: Provides a client script to communicate with a deployed LangGraph agent.
+4.  **Pinecone Retriever (`pinecone_retriever_tool.py`)**: Shows how to create a tool that retrieves information from a Pinecone vector store.
+
+## Features
+
+-   **Tool Integration**: Shows how to integrate external tools into a LangGraph agent.
+-   **Conditional Workflows**: Demonstrates the use of conditional edges to create dynamic and responsive agent behaviors.
+-   **State Management**: Utilizes `StateGraph` and `MessagesState` to manage the application's state throughout the workflow.
+-   **Pre-built Agents**: Leverages `create_react_agent` for rapid development of tool-using agents.
+-   **Visualization**: Generates and saves visual representations of the workflows as PNG images and Mermaid diagram files.
+-   **Vector Store Integration**: Shows how to connect to a Pinecone vector store and retrieve data.
+-   **Utility Functions**: The `util.py` file provides helper functions for creating and managing the Pinecone index, including text splitting, embedding generation, and Pinecone index management.
+
+
+
+## Usage
+
+### Tool-Using Agent
+
+This script demonstrates how to build an agent that can use multiple tools.
+
+**To run the script**:
+```bash
+python langgraph_tools_agent.py
+```
+
+This will execute a pre-defined query ("What is the temperature in New York and explain me how the stock exchange works?") and print the agent's response.
+
+### Prompt-Chaining Workflow
+
+This script showcases a workflow for generating and improving a joke based on a conditional check.
+
+**To run the script**:
+```bash
+python langgraph_prompt_chain_workflow.py
+```
+
+The script will generate a joke about "cats," check if it has a punchline, and then improve and polish it if necessary. The final joke will be printed to the console.
+
+### langgraph studio using langgraph dev
+
+**To run the script**:
+1. activate the virtual environment
+2. run the following command:
+```bash
+langgraph dev
+```
+This will start the langgraph studio.
+
+### Agent Client
+
+This script provides a client to interact with a deployed LangGraph agent.
+
+**To run the script**:
+1.  First, ensure your LangGraph agent is running and accessible at `http://localhost:2024`.
+2.  Then, run the client script:
     ```bash
-    langgraph up
+    python langgraph_agent_client.py
     ```
-2.  Start the Flask UI:
-    ```bash
-    python flask_ui.py
-    ```
-3.  Open your browser and navigate to `http://localhost:5000` to interact with the agent.
 
-## Tools
+The client will send a request to the agent ("what is weather like in New York") and print the streamed response.
 
-The ReAct agent is equipped with the following tools:
+### Pinecone Retriever
 
-- `get_temperature`: Get the current temperature for a city.
-- `get_currency_exchange_rates`: Get currency exchange rates.
-- `get_stock_price`: Get the latest stock price for a ticker.
-- `youtube_search`: Search for videos on YouTube.
-- `retrieve_obama_speech_context`: Retrieve context from an Obama speech vector store.
-- `ingest_apple_10k_docs_into_vector_store`: Ingest Apple's 10-K report into a vector store.
-- `retrieve_apple_10k_context`: Retrieve context from the Apple 10-K vector store.
-- `drop_pinecone_index`: Delete a Pinecone index.
-- `list_pinecone_indexes`: List all available Pinecone indexes.
-- `get_pinecone_index_details`: Get detailed information about a Pinecone index.
-- `handle_file_upload`: Handle file uploads from the LangStudio interface.
-- `helper_func`: Get information about all available tools.
+This script demonstrates how to create a tool that retrieves information from a Pinecone vector store. The `pinecone_retriever_tool.py` file contains the tool definition, and the `util.py` file contains helper functions for creating and managing the Pinecone index. The `docs/apple_10k.pdf` file is used as the data source for the vector store.
+
+**To run the script**:
+```bash
+python pinecone_retriever_tool.py
+```
+
+This will execute a pre-defined query ("what was obama said about schools") and print the retrieved context.
+
+### Chatbot Example
+
+This script (`chatbot.py`) implements a simple conversational chatbot using LangGraph. It demonstrates how to create a basic agent that can respond to user input. The `chatbot_graph.png` file provides a visual representation of the chatbot's workflow.
+
+**To run the script**:
+```bash
+python chatbot.py
+```
+
+This will start an interactive chatbot session in your terminal.
+
+
+
+## Dependencies
+
+The project's dependencies are listed in the `requirements.txt` file:
+
+- `yfinance`
+- `python-dotenv`
+- `google-genai`
+- `langchain`
+- `langchain-google-genai`
+- `langchain-core`
+- `langchain-community`
+- `youtube_search`
+- `langgraph`
+- `IPython`
+- `langgraph-cli[inmem]`
+- `langgraph-sdk`
+- `langchain-pinecone`
+- `langchain-openai`
+- `pinecone`
+- `langchain-huggingface`
+- `pypdf`
+- `sentence-transformers`
