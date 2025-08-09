@@ -47,6 +47,14 @@ def generate_joke(state: State):
     msg = llm.invoke(f"Write a short joke about {state['topic']}")
     return {"joke": msg.content}
 
+# def check_punchline(state: State):
+#     """Gate function to check if the joke has a punchline"""
+
+#     # Simple check - does the joke contain "?" or "!"
+#     if "?" in state["joke"] or "!" in state["joke"]:   # custom logic
+#         return "Fail"
+#     return "Pass"
+
 def check_punchline(state: State):
     """Gate function to check if the joke has a punchline"""
 
@@ -54,14 +62,6 @@ def check_punchline(state: State):
     if "?" in state["joke"] or "!" in state["joke"]:   # custom logic
         return "Fail"
     return "Pass"
-
-# def check_punchline(state: State):
-#     """Gate function to check if the joke has a punchline"""
-
-#     # Simple check - does the joke contain "?" or "!"
-#     if "?" in state["joke"] or "!" in state["joke"]:   # custom logic
-#         return improve_joke
-#     return END
 
 def improve_joke(state: State):
     """Second LLM call to improve the joke"""
@@ -92,8 +92,6 @@ workflow.add_conditional_edges(
     "generate_joke", check_punchline, {"Fail": "improve_joke", "Pass": END}
     # "generate_joke", check_punchline
 )
-workflow.add_edge("generate_joke", "improve_joke")
-workflow.add_edge("generate_joke", END)
 workflow.add_edge("improve_joke", "polish_joke")
 workflow.add_edge("polish_joke", END)
 
