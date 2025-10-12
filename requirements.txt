@@ -18,3 +18,4 @@ langchain-huggingface
 pypdf
 sentence-transformers
 flask
+pyppeteer

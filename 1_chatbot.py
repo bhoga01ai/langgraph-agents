@@ -17,6 +17,9 @@ from langchain.chat_models import init_chat_model
 from langgraph.graph.message import add_messages
 from IPython.display import display,Image
 from langgraph.checkpoint.memory import InMemorySaver
+# save the graph
+from langchain_core.runnables.graph import MermaidDrawMethod
+
 
 
 # STEP 2 Define the LLM
@@ -25,7 +28,7 @@ llm = init_chat_model(model="gemini-2.5-flash",model_provider="google_genai",tem
 # STEP 3 Defin the Chatbot STATE -- ScrachPAD
 
 class State(TypedDict):
-    messages: Annotated[list,add_messages]
+    messages: Annotated[list,add_messages]  # Reducer to add messages to the state
 
 # STEP 4 Define the CHATBOT node
 
@@ -46,8 +49,9 @@ memory_saver=InMemorySaver()
 
 graph_without_memory=graph_builder.compile()   # without mememory
 
-# save the graph
-png_data = graph_without_memory.get_graph().draw_mermaid_png()
+
+# Use Pyppeteer rendering method to avoid relying on the online API
+png_data = graph_without_memory.get_graph().draw_mermaid_png(draw_method=MermaidDrawMethod.PYPPETEER, max_retries=5, retry_delay=2.0)
 with open("chatbot_graph.png", "wb") as f:
     f.write(png_data)
 print("Graph saved as chatbot_graph.png")
