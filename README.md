@@ -14,13 +14,13 @@ Follow these steps to set up and run the examples:
 
 2.  **Create and activate a virtual environment**:
     ```bash
-    python -m venv .venv
+    uv venv
     source .venv/bin/activate
     ```
 
 3.  **Install dependencies**:
     ```bash
-    pip install -r requirements.txt
+    uv pip install -r requirements.txt
     ```
 
 4.  **Set up environment variables**:
@@ -46,8 +46,8 @@ Follow these steps to set up and run the examples:
 
 This project serves as a practical guide to using LangGraph for building sophisticated language agent applications. It includes four distinct examples:
 
-1.  **Tool-Using Agent (`langgraph_tools_agent.py`)**: Demonstrates how to create an agent that can use a variety of tools, including fetching weather information, currency exchange rates, stock prices, and searching YouTube.
-2.  **Prompt-Chaining Workflow (`langgraph_prompt_chain_workflow.py`)**: Illustrates a conditional workflow where a joke is generated, evaluated, and then improved based on a quality check.
+1.  **Tool-Using Agent (`4_langgraph_tools_agent.py`)**: Demonstrates how to create an agent that can use a variety of tools, including fetching weather information, currency exchange rates, stock prices, and searching YouTube.
+2.  **Prompt-Chaining Workflow (`2_langgraph_prompt_chain_workflow.py`)**: Illustrates a conditional workflow where a joke is generated, evaluated, and then improved based on a quality check.
 3.  **Agent Client (`langgraph_agent_client.py`)**: Provides a client script to communicate with a deployed LangGraph agent.
 4.  **Pinecone Retriever (`pinecone_retriever_tool.py`)**: Shows how to create a tool that retrieves information from a Pinecone vector store.
 
@@ -71,7 +71,7 @@ This script demonstrates how to build an agent that can use multiple tools.
 
 **To run the script**:
 ```bash
-python langgraph_tools_agent.py
+python 4_langgraph_tools_agent.py
 ```
 
 This will execute a pre-defined query ("What is the temperature in New York and explain me how the stock exchange works?") and print the agent's response.
@@ -82,7 +82,7 @@ This script showcases a workflow for generating and improving a joke based on a 
 
 **To run the script**:
 ```bash
-python langgraph_prompt_chain_workflow.py
+python 2_langgraph_prompt_chain_workflow.py
 ```
 
 The script will generate a joke about "cats," check if it has a punchline, and then improve and polish it if necessary. The final joke will be printed to the console.
@@ -123,11 +123,11 @@ This will execute a pre-defined query ("what was obama said about schools") and 
 
 ### Chatbot Example
 
-This script (`chatbot.py`) implements a simple conversational chatbot using LangGraph. It demonstrates how to create a basic agent that can respond to user input. The `chatbot_graph.png` file provides a visual representation of the chatbot's workflow.
+This script (`1_chatbot.py`) implements a simple conversational chatbot using LangGraph. It demonstrates how to create a basic agent that can respond to user input. The `chatbot_graph.png` file provides a visual representation of the chatbot's workflow.
 
 **To run the script**:
 ```bash
-python chatbot.py
+python 1_chatbot.py
 ```
 
 This will start an interactive chatbot session in your terminal.
