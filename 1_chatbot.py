@@ -41,6 +41,7 @@ graph_builder = StateGraph(State)
 
 # STEP 6 Add the nodes
 graph_builder.add_node('chatbot',chatbot)
+
 graph_builder.add_edge(START,'chatbot')
 graph_builder.add_edge('chatbot',END)
 

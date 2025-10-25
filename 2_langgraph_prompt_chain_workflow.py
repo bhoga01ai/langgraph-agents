@@ -60,8 +60,8 @@ def check_punchline(state: State):
 
     # Simple check - does the joke contain "?" or "!"
     if "?" in state["joke"] or "!" in state["joke"]:   # custom logic
-        return "Fail"
-    return "Pass"
+        return "Pass"
+    return "Fail"
 
 def improve_joke(state: State):
     """Second LLM call to improve the joke"""
