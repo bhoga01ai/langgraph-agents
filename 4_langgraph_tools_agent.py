@@ -132,7 +132,7 @@ def retrieve_obama_speech_context(
     """
     try:
         # Setup vector store with your existing index
-        vector_store = setup_vector_store(index_name)
+        vector_store = setup_vector_store(index_name) # clint 
         retriever = vector_store.as_retriever(
                     search_type="similarity_score_threshold",
                     search_kwargs={"k": k, "score_threshold": score_threshold},
@@ -426,6 +426,53 @@ def handle_file_upload(attachment_data: str) -> str:
         return f"Error handling file upload: {str(e)}"
 
 @tool
+def get_env_keys() -> str:
+    """
+    Get a list of all environment variable keys defined in the .env file without exposing their values.
+    
+    This function reads the .env file in the project root directory and extracts only the key names
+    of the environment variables. It does not expose any sensitive values.
+    
+    Returns:
+        str: A formatted string containing the list of environment variable keys found in the .env file,
+             or an error message if the operation failed.
+    """
+    try:
+        env_file_path = os.path.join(os.getcwd(), '.env')
+        
+        # Check if .env file exists
+        if not os.path.exists(env_file_path):
+            return "Error: .env file not found in the project root directory."
+        
+        # Read the .env file and extract keys
+        env_keys = []
+        with open(env_file_path, 'r') as file:
+            for line in file:
+                line = line.strip()
+                # Skip empty lines and comments
+                if not line or line.startswith('#'):
+                    continue
+                # Extract key (everything before the first = sign)
+                if '=' in line:
+                    key = line.split('=', 1)[0].strip()
+                    env_keys.append(key)
+        
+        # Format the output
+        if env_keys:
+            result = "📝 Environment Variables in .env file:\n"
+            result += "=" * 40 + "\n\n"
+            for i, key in enumerate(env_keys, 1):
+                result += f"{i}. {key}\n"
+            result += "\n" + "=" * 40 + "\n"
+            result += "⚠️ Note: For security reasons, the actual values are not displayed."
+            return result
+        else:
+            return "No environment variables found in the .env file."
+    
+    except Exception as e:
+        return f"Error reading .env file: {str(e)}"
+
+@tool
 def get_pinecone_index_details(index_name: str) -> str:
     """
     Get comprehensive details about a specific Pinecone index including embedding model info and metadata.
@@ -579,7 +626,7 @@ def get_pinecone_index_details(index_name: str) -> str:
 # Update the tools list
 tools = [get_temperature,get_currency_exchange_rates,get_stock_price,youtube,retrieve_obama_speech_context,
          helper_func,retrieve_apple_10k_context,ingest_apple_10k_docs_into_vector_store,
-         drop_pinecone_index,list_pinecone_indexes,get_pinecone_index_details,handle_file_upload]
+         drop_pinecone_index,list_pinecone_indexes,get_pinecone_index_details,handle_file_upload,get_env_keys]
 
 # Update the available_functions dictionary
 available_functions = {
@@ -595,6 +642,7 @@ available_functions = {
     "list_pinecone_indexes": list_pinecone_indexes,
     "get_pinecone_index_details": get_pinecone_index_details,
     "handle_file_upload": handle_file_upload,
+    "get_env_keys": get_env_keys,
 }
 # Create a dictionary of tools by name
 tools_by_name = {tool.name: tool for tool in tools}
